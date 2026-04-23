@@ -1,0 +1,407 @@
+# Portal Scanner Configuration
+# Used by /career-ops scan to discover new offers automatically.
+#
+# Strategy (3 levels):
+#   1. Playwright → careers_url of each company (real-time, reliable)
+#   2. Greenhouse API → structured JSON (fast, Greenhouse-only)
+#   3. WebSearch with site: filters (broad discovery, may be stale)
+#
+# IMPORTANT: Each company in tracked_companies MUST have careers_url.
+#   Prefer the BRANDED company careers URL whenever available; use ATS-hosted URL only as fallback.
+#   ✅ https://careers.mastercard.com   ⚠️ https://mastercard.wd1.myworkdayjobs.com (fallback only)
+#   ✅ https://openai.com/careers       ⚠️ https://job-boards.greenhouse.io/openai (fallback only)
+#   Exception: ATS-hosted careers_url is acceptable when no branded careers page exists.
+#   Using raw ATS URLs when a branded page exists can cause false 410 errors (job ID mismatch).
+#
+# HOW TO CUSTOMIZE:
+#   1. Copy this file to portals.yml in the project root
+#   2. Edit title_filter.positive with YOUR target role keywords
+#   3. Add/remove companies in tracked_companies
+#   4. Adjust search_queries for your preferred job boards
+#   5. Set enabled: false on companies you don't care about
+
+# -- Title filter --
+# The scanner uses these keywords to decide if a title is relevant.
+# At least 1 positive must match AND 0 negatives must match (case-insensitive).
+
+title_filter:
+  positive:
+    # [CUSTOMIZE] Add keywords matching YOUR target roles
+    - "New Grad"
+    - "Entry Level"
+    - "Junior"
+    - "Associate"
+    - "Early Career"
+    - "University"
+    - "Graduate"
+    - "Software Engineer"
+    - "Software Developer"
+    - "SDE"
+    - "SWE"
+    - "Full Stack"
+    - "Fullstack"
+    - "Full-Stack"
+    - "Frontend"
+    - "Front End"
+    - "Front-End"
+    - "React"
+    - "UI Engineer"
+    - "Java"
+    - "Python"
+    - "Node"
+    - "Backend"
+    - "Back End"
+    - "Back-End"
+    - "API"
+    - "Cloud Engineer"
+    - "DevOps"
+    - "Platform Engineer"
+    - "Infrastructure"
+    - "SRE"
+    - "Site Reliability"
+    - "AWS"
+    - "AI Engineer"
+    - "GenAI"
+    - "Generative AI"
+  negative:
+    # [CUSTOMIZE] Add keywords for roles you want to exclude
+    - "Senior"
+    - "Staff"
+    - "Principal"
+    - "Lead"
+    - "Head"
+    - "Director"
+    - ".NET"
+    - "iOS"
+    - "Android"
+    - "PHP"
+    - "Ruby"
+    - "Embedded"
+    - "Firmware"
+    - "FPGA"
+    - "ASIC"
+    - "Blockchain"
+    - "Web3"
+    - "Crypto"
+    - "Salesforce Admin"
+    - "SAP"
+    - "Oracle EBS"
+    - "Mainframe"
+    - "COBOL"
+  # seniority_boost:
+  #   # These prefixes add relevance but are not required
+  #   - "New Grad"
+  #   - "Entry Level"
+  #   - "Junior"
+  #   - "Associate"
+  #   - "Early Career"
+  #   - "University"
+  #   - "Graduate"
+
+# -- Search queries --
+# Each query triggers a WebSearch. Use site: to filter by portal.
+# The scanner extracts title, URL, and company from results.
+
+# search_queries:
+#   # -- Ashby --
+#   - name: Ashby — SWE
+#     query: 'site:jobs.ashbyhq.com "Software" OR "Engineer" OR "Developer"'
+#     enabled: true
+#   - name: Ashby - Frontend Engineer
+#     query: 'site:jobs.ashbyhq.com "React" OR "Frontend" OR "Engineer" OR "Developer"'
+#     enabled: true
+#   - name: Ashby - Cloud Engineer
+#     query: 'site:jobs.ashbyhq.com "AWS" OR "Cloud" OR "Engineer" OR "Developer"'
+#     enabled: true
+#   - name: Ashby - AI Engineer
+#     query: 'site:jobs.ashbyhq.com "AI" OR "GenAI" OR "Generative AI" OR "Engineer" OR "Developer"'
+#     enabled: true
+#   - name: Ashby - Backend Engineer
+#     query: 'site:jobs.ashbyhq.com "Backend" OR "Java" OR "Python" OR "Node" OR "Engineer" OR "Developer"'
+#     enabled: true
+
+#   # -- Greenhouse --
+#   - name: Greenhouse — SWE
+#     query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "Software" OR "Engineer" OR "Developer"'
+#     enabled: true
+
+#   - name: Greenhouse — Frontend Engineer
+#     query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "React" OR "Frontend" OR "Engineer" OR "Developer"'
+#     enabled: true
+
+#   - name: Greenhouse — Cloud Engineer
+#     query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "AWS" OR "Cloud" OR "Engineer" OR "Developer"'
+#     enabled: true
+
+#   - name: Greenhouse — AI Engineer
+#     query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "AI" OR "GenAI" OR "Generative AI" OR "Engineer" OR "Developer"'
+#     enabled: true
+  
+#   - name: Greenhouse — Backend Engineer
+#     query: 'site:boards.greenhouse.io OR site:job-boards.greenhouse.io "Backend" OR "Java" OR "Python" OR "Node" OR "Engineer" OR "Developer"'
+#     enabled: true
+
+#   # -- Lever --
+#   - name: Lever — New Grad
+#     query: 'site:jobs.lever.co "Software" OR "Engineer" OR "Developer"'
+#     enabled: true
+
+
+# -- Tracked companies --
+# Companies whose career pages are checked directly.
+# scan_method: playwright (default), websearch, greenhouse_api
+# For Greenhouse companies, add api: field for faster structured JSON access.
+
+tracked_companies:
+  # ========== BIG TECH ==========
+  - name: Google
+    careers_url: https://careers.google.com/jobs
+    scan_method: websearch
+    scan_query: 'site:careers.google.com "Software" OR "Developer" OR "Engineer" "New Grad" OR "University"'
+    enabled: true
+
+  - name: Microsoft
+    careers_url: https://careers.microsoft.com
+    scan_method: websearch
+    scan_query: 'site:careers.microsoft.com "New Grad" OR "University" "Software" OR "Developer" OR " Engineer"'
+    enabled: true
+
+  - name: Amazon
+    careers_url: https://www.amazon.jobs
+    scan_method: websearch
+    scan_query: 'site:amazon.jobs "New Grad" OR "University" "Software" OR "Cloud" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Meta
+    careers_url: https://www.metacareers.com/jobsearch
+    scan_method: websearch
+    scan_query: 'site:metacareers.com "New Grad" OR "University" "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Apple
+    careers_url: https://jobs.apple.com/en-us/search?location=united-states-USA
+    scan_method: websearch
+    scan_query: 'site:jobs.apple.com "New Grad" OR "University" "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Dell Technologies
+    careers_url: https://jobs.dell.com
+    scan_method: websearch
+    scan_query: 'site:jobs.dell.com "Software" OR "Developer" OR "Engineer" "Entry" OR "Junior" OR "Associate"'
+    enabled: true
+
+  - name: EMC Corporation
+    careers_url: https://emcins.wd5.myworkdayjobs.com/EMC_Careers
+    api: emcins.wd5.myworkdayjobs.com/wday/cxs/emcins/EMC_Careers/jobs
+    enabled: true
+
+  - name: Hewlett Packard Enterprise
+    careers_url: https://careers.hpe.com
+    scan_method: websearch
+    scan_query: 'site:careers.hpe.com "Software" OR "Developer" OR "Engineer" "Entry" OR "Junior" OR "Associate"'
+    enabled: true
+
+  - name: Indeed Inc
+    careers_url: https://www.indeed.com/cmp/Indeed/jobs
+    scan_method: websearch
+    scan_query: 'site:www.indeed.com/cmp/Indeed/jobs "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Samsung Austin Semiconductor
+    careers_url: https://sec.wd3.myworkdayjobs.com/
+    api: sec.wd3.myworkdayjobs.com/wday/cxs/sec/Samsung_Careers/jobs
+    enabled: true
+
+  - name: Charles Schwab
+    careers_url: https://www.schwabjobs.com/
+    scan_method: websearch
+    scan_query: 'site:www.schwabjobs.com "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: NXP USA Inc
+    careers_url: https://nxp.wd3.myworkdayjobs.com
+    api: nxp.wd3.myworkdayjobs.com/wday/cxs/nxp/careers/jobs
+    enabled: true
+
+  # ========== DALLAS CITY ==========
+
+  - name: KPMG
+    careers_url: https://www.kpmguscareers.com
+    scan_method: websearch
+    scan_query: 'site:www.kpmguscareers.com "Software" OR "IT"'
+    enabled: true
+
+  - name: AT&T
+    careers_url: https://www.att.jobs/
+    scan_method: websearch
+    scan_query: 'site:att.jobs "Software" OR "IT" OR "Engineer" OR "Developer"'
+    enabled: true
+  
+  - name: Photon Info Tech Inc
+    careers_url: https://fa-ertb-saasfaprod1.fa.ocs.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2/jobs
+    api: fa-ertb-saasfaprod1.fa.ocs.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=CX_2&expand=requisitionList
+    enabled: true
+
+  - name: AECOM Technical Services Inc
+    careers_url: https://aecom.jobs
+    scan_query: 'site:aecom.jobs "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+  
+  - name: Southwest Airlines Co
+    careers_url: https://careers.southwestair.com
+    scan_method: websearch
+    scan_query: 'site:careers.southwestair.com "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Copart Inc
+    careers_url: https://copart.wd12.myworkdayjobs.com/Copart
+    api: copart.wd12.myworkdayjobs.com/wday/cxs/copart/Copart/jobs
+    enabled: true
+
+  - name: 09 Solutions Inc
+    careers_url: https://o9solutions.wd5.myworkdayjobs.com/o9SolutionsExternal
+    api: o9solutions.wd5.myworkdayjobs.com/wday/cxs/o9solutions/o9SolutionsExternal/jobs
+    enabled: true
+
+  # ========== IRVING ==========
+  - name: Caterpillar Inc
+    careers_url: https://careers.caterpillar.com/en/jobs/
+    scan_method: websearch
+    scan_query: 'site:careers.caterpillar.com "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: McKesson Corporation
+    careers_url: https://careers.mckesson.com
+    scan_method: websearch
+    scan_query: 'site:careers.mckesson.com "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: 7-Eleven Inc
+    careers_url: https://careers.7-eleven.com
+    scan_method: websearch
+    scan_query: 'site:careers.7-eleven.com "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+
+  # ========== FORT WORTH ==========
+  - name: American Airlines Inc
+    careers_url: https://jobs.aa.com
+    scan_method: websearch
+    scan_query: 'site:jobs.aa.com "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Alcon Research LLC
+    careers_url: https://alcon.wd5.myworkdayjobs.com/careers_alcon
+    api: alcon.wd5.myworkdayjobs.com/wday/cxs/alcon/careers_alcon/jobs
+    enabled: true
+
+  - name: Elevate Credit Service LLC
+    careers_url: https://elevatecredit.wd501.myworkdayjobs.com/Elevate_Careers
+    api: elevatecredit.wd501.myworkdayjobs.com/wday/cxs/elevatecredit/Elevate_Careers/jobs
+    enabled: true
+
+  - name: PMG Worldwide LLC
+    careers_url: https://www.pmg.com/team-and-culture/job-openings
+    scan_method: websearch
+    scan_query: 'site:www.pmg.com/team-and-culture/job-openings "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+
+  # ========== ARLINGTON ==========
+  - name: Peaches and Platinum LLC
+    careers_url: https://peachesandplatinumllc.com/jobs
+    scan_query: 'site:peachesandplatinumllc.com/jobs "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+
+  # ========== MANSFIELD ==========
+  - name: Mouser Electronics Inc
+    careers_url: https://eabw.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/jobs
+    api: eabw.fa.us2.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=CX_1&expand=requisitionList
+    enabled: true
+
+  # ========== DENTON ==========
+  - name: Sally Beauty Supply LLC
+    careers_url: https://eigx.fa.us6.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX/jobs
+    api: eigx.fa.us6.oraclecloud.com/hcmRestApi/resources/latest/recruitingCEJobRequisitions?onlyData=true&finder=findReqs;siteNumber=CX&expand=requisitionList
+    enabled: true
+  - name: Tetra Pak Inc
+    careers_url: https://jobs.tetrapak.com
+    scan_method: websearch
+    scan_query: 'site:jobs.tetrapak.com "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+
+  # ========== LEWISVILLE ==========
+  - name: Tek Ninjas Solutions LLC
+    careers_url: https://tekninjas.com/jobs
+    scan_query: 'site:tekninjas.com/jobs "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Advanced Knowledge Tech LLC
+    careers_url: https://www.akt-corp.com/careers-2
+    scan_query: 'site:www.akt-corp.com/careers-2 "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Techstar Consulting Inc
+    careers_url: https://techstar.greythr.com/hire/jobs
+    scan_query: 'site:techstar.greythr.com/hire/jobs "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  # ========== PLANO ==========
+  - name: Siemens Industry Software Inc
+    careers_url: https://jobs.siemens.com/en_US/externaljobs
+    scan_method: websearch
+    scan_query: 'site:jobs.siemens.com/en_US/externaljobs "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Ericsson Inc
+    careers_url: https://jobs.ericsson.com
+    scan_method: websearch
+    scan_query: 'site:jobs.ericsson.com "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: NTT Data Services LLC
+    careers_url: https://careers.services.global.ntt
+    scan_query: 'site:careers.services.global.ntt "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Tek Leaders Inc
+    careers_url: https://tekleaders.com/jobs
+    scan_query: 'site:tekleaders.com/jobs "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  # ========== FRISCO ==========
+  - name: Sage IT Inc
+    careers_url: https://sageitinc.com/jobs
+    scan_query: 'site:sageitinc.com/jobs "Software" OR "Developer" '
+    enabled: true
+
+  - name: Caprus IT Inc
+    careers_url: https://www.caprusit.com/careers/
+    scan_query: 'site:www.caprusit.com/careers "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Advithri Technologies LLC
+    careers_url: https://www.advithri.com/current-opening.html
+    scan_query: 'site:www.advithri.com/current-opening.html "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Uber Freight US LLC
+    careers_url: https://www.uberfreight.com/en-US/careers#opportunities
+    scan_query: 'site:www.uberfreight.com/en-US/careers "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  - name: Prodigy Technologies Inc
+    careers_url: https://prodigytechnologies.net/careers.html
+    scan_query: 'site:prodigytechnologies.net/careers.html "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  # ========== MCKINNEY ==========
+  - name: V3Tech Solutions Inc
+    careers_url: https://v3techsol.com/careers
+    scan_query: 'site:v3techsol.com/careers "Software" OR "Developer" OR "Engineer"'
+    enabled: true
+
+  
+
